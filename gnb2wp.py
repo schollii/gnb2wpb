@@ -40,7 +40,7 @@ from xml.sax.saxutils import unescape
 
 
 class Settings:
-    testing = True
+    testing = False
     iniFile = 'config.ini'
     wpTemplate = 'wordpress-export.xml'
     wpOutName = 'wordpress-import.xml'
@@ -377,18 +377,11 @@ class WPFromAtom(GNBConverter):
     def getEntries(self):
         entries = []
         items = self.getDOM().getElementsByTagName('entry')
-        count = 0
         for item in items:
             content = item.getElementsByTagName('content')
             if content and content[0].hasAttributes():
                 gnbEntry = self.WPItemFromAtom( content[0].parentNode )
                 entries.append(gnbEntry)
-                count += 1
-                
-                if Settings.testing:
-                    # only do less than 15 posts so easy to remove from WP:
-                    if count > 13 + Settings.wpFirstPostID:
-                        return
                 
         return entries                        
     
@@ -529,6 +522,10 @@ def createWPItems(parentElem, itemTemplate, config):
                     niceCategName, gnbEntry)
                 parentElem.appendChild( wpItem )
                 postID += 1
+                
+                # only do less than 15 posts so easy to remove from WP:
+                if Settings.testing and postID >= 13 + Settings.wpFirstPostID:
+                    return 
         
 
 def createTemplateItem(itemElements, dom):
